@@ -18,6 +18,7 @@ static inline int hc(int hc_type, void **s,int len) {
         "movq %1, %%rax \t\n\
         movq %2, %%rdi \t\n\
         movq %3, %%rsi \t\n\
+        movq %4, %%rdx \t\n\
         cpuid \t\n\
         mov %%rax, %0 \t\n"
         : "=m" (ret) /* output operand */
