@@ -5,7 +5,7 @@
 // #if defined(__x86_64__)
 #if defined(__x86_64__)
 static inline int hc(int hc_type, void **s,int len) {
-    uint64_t eax = hc_type;
+    uint64_t eax = MAGIC_VALUE;
     uint64_t ret = hc_type;
     int y = 0;
     do {
