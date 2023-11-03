@@ -21,7 +21,7 @@ static inline int hc(int hc_type, void **s,int len) {
         cpuid \t\n\
         mov %%rax, %0 \t\n"
         : "=m" (ret) /* output operand */
-        : "g" (eax), "g" (hc_type), "g" (len), "g" (s) /* input operands */
+        : "g" (eax), "g" (hc_type), "g" (s), "g" (len) /* input operands */
         : "rdi", "rsi", "rdx", "eax" /* clobbered registers */
         );
     } while (ret == RETRY);
@@ -48,7 +48,7 @@ static inline int hc(int hc_type,void **s,int len) {
         cpuid \t\n\
         mov %%eax, %0 \t\n"
         : "=g" (ret) /* output operand */
-        : "g" (eax), "g" (hc_type), "g" (len), "g" (s) /* input operands */
+        : "g" (eax), "g" (hc_type), "g" (s), "g" (len) /* input operands */
         : "eax", "ebx", "ecx", "edx" /* clobbered registers */
         );
     } while (ret == RETRY);
