@@ -85,7 +85,6 @@ static inline __attribute__((always_inline)) int hc(int hc_type, void **s, int l
 #elif defined(__mips64)
 static inline int hc(int hc_type, void **s, int len) {
     int ret = MAGIC_VALUE;
-    volatile int x = 0;
     int y = 0;
     do {
         ret = MAGIC_VALUE;
