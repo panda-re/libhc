@@ -147,15 +147,15 @@ static inline __attribute__((always_inline)) int hc(int hc_type, void **s,int le
             x |= *(((int*)s[i]) + y);
         }
 
-        register int r0 asm("x0") = MAGIC_VALUE;
-        register int r1 asm("x1") = hc_type;
-        register void **r2 asm("x2") = s;
-        register int r3 asm("x3") = len;
+        register int r8 asm("x8") = MAGIC_VALUE;
+        register int r0 asm("x0") = hc_type;
+        register void **r1 asm("x1") = s;
+        register int r2 asm("x2") = len;
 
         asm volatile(
             "msr S0_0_c5_c0_0, xzr \t\n"
             : "=r"(r0) /* output */
-            : "r"(r0), "r"(r1), "r"(r2), "r"(r8) /* inputs */
+            : "r"(r8), "r"(r0), "r"(r1), "r"(r2) /* inputs */
             : "memory" /* clobbered registers */
         );
 
