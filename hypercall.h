@@ -120,7 +120,7 @@ static inline int hc(int hc_type,void  **s,int len) {
         for(int i = 0; i < len; i++) {
             x |= *(((int*) s[i]) + y);
         }
-        
+
         asm __volatile__(
         "move $2, %1\t\n"
         "move $4, %2\t\n"
@@ -143,25 +143,24 @@ static inline __attribute__((always_inline)) int hc(int hc_type, void **s,int le
     do {
         ret = MAGIC_VALUE;
         volatile int x = 0;
-        for(int i = 0; i < len; i++) {
-            x |= *(((int*) s[i]) + y);
+        for (int i = 0; i < len; i++) {
+            x |= *(((int*)s[i]) + y);
         }
-        asm __volatile__("stp x0, x1, [sp, #-16]! \t\n\
-            stp x2, x3, [sp, #-16]! \t\n\
-            mov x8, %1 \t\n\
-            mov x0, %2 \t\n\
-            mov x1, %3 \t\n\
-            mov x2, %4 \t\n\
-            msr S0_0_c5_c0_0, xzr \t\n\
-            mov %0, x0 \t\n\
-            ldp x0, x1, [sp], #16 \t\n\
-            ldp x2, x3, [sp], #16 \t\n"
-        : "=g"(ret) /* no output registers */
-        : "r" (MAGIC_VALUE), "r" (hc_type), "r" (s), "r" (len), "r" (0) /* input registers */
-        : "x0", "x1", "x2", "x3", "x4" /* clobbered registers */
-        );
-    } while (ret == RETRY);  
 
+        register int r8 asm("x8") = MAGIC_VALUE;
+        register int r0 asm("x0") = hc_type;
+        register void **r1 asm("x1") = s;
+        register int r2 asm("x2") = len;
+
+        asm volatile(
+            "msr S0_0_c5_c0_0, xzr \t\n"
+            : "=r"(r0) /* output */
+            : "r"(r8), "r"(r0), "r"(r1), "r"(r2) /* inputs */
+            : "memory" /* clobbered registers */
+        );
+
+        ret = r0;
+    } while (ret == RETRY);
     return ret;
 }
 #else
