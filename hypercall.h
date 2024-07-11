@@ -22,7 +22,7 @@ static inline int hc(int hc_type, void **s,int len) {
         cpuid \t\n\
         mov %%rax, %0 \t\n"
         : "=m" (ret) /* output operand */
-        : "g" (eax), "g" (hc_type), "g" (s), "g" (len) /* input operands */
+        : "g" (eax), "g" ((uint64_t)hc_type), "g" (s), "g" ((uint64_t)len) /* input operands */
         : "rdi", "rsi", "rdx", "eax" /* clobbered registers */
         );
     } while (ret == RETRY);
