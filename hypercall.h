@@ -103,7 +103,7 @@ static inline int hc(int hc_type, void **s, int len) {
         "move %0, $2\t\n"
         : "=g"(ret) /* output operand */
         : "r" (MAGIC_VALUE), "r" (hc_type), "r" (s), "r" (len)  /* input operands */
-        : "a0", "a1", "a2", "a3" /* clobbered registers */
+        : "v0", "a0", "a1", "a2", "a3" /* clobbered registers */
         );
     } while (ret == RETRY);
 
