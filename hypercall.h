@@ -23,7 +23,7 @@ static inline int hc(int hc_type, void **s,int len) {
         mov %%rax, %0 \t\n"
         : "=m" (ret) /* output operand */
         : "g" (eax), "g" ((uint64_t)hc_type), "g" (s), "g" ((uint64_t)len) /* input operands */
-        : "rdi", "rsi", "rdx", "eax" /* clobbered registers */
+        : "rdi", "rsi", "rdx", "eax", "ebx", "ecx", "edx" /* clobbered registers */
         );
     } while (ret == RETRY);
 
