@@ -1,11 +1,106 @@
-#ifndef MAGIC_VALUE
-#error Needs MAGIC_VALUE
+
+#define DECLARE_REGISTER(x,y,z) register unsigned long reg##x asm(#y) = z;
+#define COMMA ,
+#if defined(CONFIG_ARM64) || defined(__aarch64__)
+    #define REGISTER1 DECLARE_REGISTER(0,x8,num)
+    #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,x0,arg1)
+    #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,x1,arg2)
+    #define REGISTER4 REGISTER3 DECLARE_REGISTER(3,x2,arg3)
+    #define REGISTER5 REGISTER4 DECLARE_REGISTER(4,x3,arg4)
+
+    #define ASM(x)  asm volatile(\
+       "msr S0_0_c5_c0_0, xzr"\
+        : "+r"(reg1)\
+        : "r"(reg0) x \
+        : "memory" \
+    );
+    #define RETURN  return reg1;
+#elif defined(CONFIG_ARM) || defined(__arm__)
+    #define REGISTER1 DECLARE_REGISTER(0,r7,num)
+    #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,r0,arg1)
+    #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,r1,arg2)
+    #define REGISTER4 REGISTER3 DECLARE_REGISTER(3,r2,arg3)
+    #define REGISTER5 REGISTER4 DECLARE_REGISTER(4,r3,arg4)
+
+    #define ASM(x)  asm volatile(\
+       "mcr p7, 0, r0, c0, c0, 0"\
+        : "+r"(reg1)\
+        : "r"(reg0) x \
+        : "memory" \
+    );
+
+
+
+    #define RETURN return reg1;
+
+#elif defined(CONFIG_MIPS) || defined(mips) || defined(__mips__) || defined(__mips) || defined(__mips64)
+    #define REGISTER1 DECLARE_REGISTER(0,v0,num)
+    #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,a0,arg1)
+    #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,a1,arg2)
+    #define REGISTER4 REGISTER3 DECLARE_REGISTER(3,a2,arg3)
+    #define REGISTER5 REGISTER4 DECLARE_REGISTER(4,a3,arg4)
+    #define ASM(x)  asm volatile(\
+       "movz $0, $0, $0"\
+        : "+r"(reg0) \
+        : "r"(reg1) x \
+        : "memory" \
+    );
+    #define RETURN  return reg0;
+#elif defined(CONFIG_X86_64) || defined(__x86_64__)
+    #define REGISTER1 DECLARE_REGISTER(0,rax,num)
+    #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,rdi,arg1)
+    #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,rsi,arg2)
+    #define REGISTER4 REGISTER3 DECLARE_REGISTER(3,rdx,arg3)
+    #define REGISTER5 REGISTER4 DECLARE_REGISTER(4,r10,arg4)
+
+    #define ASM(x) asm volatile(\
+        "cpuid"\
+        : "+r"(reg0) \
+        : "r"(reg1) x  \
+        : "memory" );
+    #define RETURN return reg0;
+#elif defined(CONFIG_I386) || (defined(__i386__) && !defined(__x86_64__))
+    #define REGISTER1 DECLARE_REGISTER(0,eax,num)
+    #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,ebx,arg1)
+    #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,ecx,arg2)
+    #define REGISTER4 REGISTER3 DECLARE_REGISTER(3,edx,arg3)
+    #define REGISTER5 REGISTER4 DECLARE_REGISTER(4,esi,arg4)
+
+    #define ASM(x) asm volatile(\
+        "cpuid"\
+        : "+r"(reg0) \
+        : "r"(reg1) x  \
+        : "memory" \
+    );
+    #define RETURN return reg0;
+#else
+#error "not supported"
 #endif
+static inline unsigned long igloo_hypercall(unsigned long num, unsigned long arg1){
+    REGISTER2
+    ASM()
+    RETURN
+}
+static inline unsigned long igloo_hypercall2(unsigned long num, unsigned long arg1, unsigned long arg2){
+    REGISTER3
+    ASM(COMMA"r"(reg2))
+    RETURN
+}
+
+static inline unsigned long igloo_hypercall3(unsigned long num, unsigned long arg1, unsigned long arg2, unsigned long arg3){
+    REGISTER4
+    ASM(COMMA "r"(reg2)COMMA "r"(reg3))
+    RETURN
+}
+static inline unsigned long igloo_hypercall4(unsigned long num, unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4){
+    REGISTER5
+    ASM(COMMA "r"(reg2)COMMA "r"(reg3)COMMA "r"(reg4))
+    RETURN
+}
+
+#ifdef MAGIC_VALUE
 #define RETRY 0xDEADBEEF
-// #if defined(__x86_64__)
-#if defined(__x86_64__)
 static inline int hc(int hc_type, void **s,int len) {
-    uint64_t eax = MAGIC_VALUE;
     uint64_t ret = hc_type;
     int y = 0;
     do {
@@ -14,155 +109,10 @@ static inline int hc(int hc_type, void **s,int len) {
         for(int i = 0; i< len; i++) {
             x |= *(((int*)s[i])+y);
         }
-        asm __volatile__(
-        "movq %1, %%rax \t\n\
-        movq %2, %%rdi \t\n\
-        movq %3, %%rsi \t\n\
-        movq %4, %%rdx \t\n\
-        cpuid \t\n\
-        mov %%rax, %0 \t\n"
-        : "=m" (ret) /* output operand */
-        : "g" (eax), "g" ((uint64_t)hc_type), "g" (s), "g" ((uint64_t)len) /* input operands */
-        : "rdi", "rsi", "rdx", "eax", "ebx", "ecx", "edx" /* clobbered registers */
-        );
-    } while (ret == RETRY);
-
-    return ret;
-}
-#elif defined(__i386__) && !defined(__x86_64__)
-static inline int hc(int hc_type,void **s,int len) {
-    int eax = MAGIC_VALUE;
-    int ret = MAGIC_VALUE;
-    int y = 0;
-    do {
-        ret = MAGIC_VALUE;
-        volatile int x = 0;
-        for(int i = 0; i< len; i++) {
-            x |= *(((int*)s[i])+y);
-        }
         y++;
-        asm __volatile__(
-        "mov %1, %%eax \t\n\
-        mov %2, %%ebx \t\n\
-        mov %3, %%ecx \t\n\
-        mov %4, %%edx \t\n\
-        cpuid \t\n\
-        mov %%eax, %0 \t\n"
-        : "=g" (ret) /* output operand */
-        : "g" (eax), "g" (hc_type), "g" (s), "g" (len) /* input operands */
-        : "eax", "ebx", "ecx", "edx" /* clobbered registers */
-        );
+        ret = igloo_hypercall3(MAGIC_VALUE,(unsigned long)hc_type,(unsigned long)s,(unsigned long)len);
     } while (ret == RETRY);
 
     return ret;
 }
-#elif defined(__arm__)
-static inline __attribute__((always_inline)) int hc(int hc_type, void **s, int len) {
-    int ret = MAGIC_VALUE;
-    int y = 0;
-    do {
-        ret = MAGIC_VALUE;
-        volatile int x = 0;
-        for (int i = 0; i < len; i++) {
-            x |= *(((int*) s[i]) + y);
-        }
-        y++;
-        asm __volatile__(
-        "mov %%r7, %1 \t\n\
-        mov %%r0, %2 \t\n\
-        mov %%r1, %3 \t\n\
-        mov %%r2, %4 \t\n\
-        mov %%r3, %5 \t\n\
-        mcr p7, 0, r0, c0, c0, 0 \t\n\
-        mov %0, %%r0 \t\n"
-      : "=g"(ret) /* no output registers */
-      : "r" (MAGIC_VALUE), "r" (hc_type), "r" (s), "r" (len), "r" (0) /* input registers */
-      : "r0", "r1", "r2", "r3", "r4", "r7" /* clobbered registers */);
-    } while (ret == RETRY);
-
-    return ret;
-}
-#elif defined(__mips64)
-static inline int hc(int hc_type, void **s, int len) {
-    int ret = MAGIC_VALUE;
-    int y = 0;
-    do {
-        ret = MAGIC_VALUE;
-        volatile int x = 0;
-        for(int i = 0; i < len; i++) {
-            x |= *(((int*)s[i]) + y);
-        }
-        y++;
-
-        asm __volatile__(
-        "move $2, %1\t\n"
-        "move $4, %2\t\n"
-        "move $5, %3\t\n"
-        "move $6, %4\t\n"
-        "movz $0, $0, $0\t\n"
-        "move %0, $2\t\n"
-        : "=g"(ret) /* output operand */
-        : "r" (MAGIC_VALUE), "r" (hc_type), "r" (s), "r" (len)  /* input operands */
-        : "v0", "a0", "a1", "a2", "a3" /* clobbered registers */
-        );
-    } while (ret == RETRY);
-
-    return ret;
-}
-#elif defined(mips) || defined(__mips__) || defined(__mips)
-static inline int hc(int hc_type,void  **s,int len) {
-    int ret;
-    int y = 0;
-    do {
-        ret = MAGIC_VALUE;
-        volatile int x = 0;
-        y++;
-        for(int i = 0; i < len; i++) {
-            x |= *(((int*) s[i]) + y);
-        }
-
-        asm __volatile__(
-        "move $2, %1\t\n"
-        "move $4, %2\t\n"
-        "move $5, %3\t\n"
-        "move $6, %4\t\n"
-        "movz $0, $0, $0\t\n"
-        "move %0, $2\t\n"
-        : "=g"(ret) /* output operand */
-        : "r" (MAGIC_VALUE), "r" (hc_type), "r" (s), "r" (len)  /* input operands */
-        : "v0", "a0", "a1", "a2", "a3" /* clobbered registers */
-        );
-    } while (ret == RETRY);
-
-    return ret;
-}
-#elif defined(__aarch64__)
-static inline __attribute__((always_inline)) int hc(int hc_type, void **s,int len) {
-    int ret = MAGIC_VALUE;
-    int y = 0;
-    do {
-        ret = MAGIC_VALUE;
-        volatile int x = 0;
-        for (int i = 0; i < len; i++) {
-            x |= *(((int*)s[i]) + y);
-        }
-
-        register int r8 asm("x8") = MAGIC_VALUE;
-        register int r0 asm("x0") = hc_type;
-        register void **r1 asm("x1") = s;
-        register int r2 asm("x2") = len;
-
-        asm volatile(
-            "msr S0_0_c5_c0_0, xzr \t\n"
-            : "=r"(r0) /* output */
-            : "r"(r8), "r"(r0), "r"(r1), "r"(r2) /* inputs */
-            : "memory" /* clobbered registers */
-        );
-
-        ret = r0;
-    } while (ret == RETRY);
-    return ret;
-}
-#else
-#error Unsupported platform.
 #endif
