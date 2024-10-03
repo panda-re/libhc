@@ -1,7 +1,7 @@
 
 #define DECLARE_REGISTER(x,y,z) register unsigned long reg##x asm(#y) = z;
 #define COMMA ,
-#if defined(CONFIG_ARM64)
+#if defined(CONFIG_ARM64) || defined(__aarch64__)
     #define REGISTER1 DECLARE_REGISTER(0,x8,num)
     #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,x0,arg1)
     #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,x1,arg2)
@@ -15,7 +15,7 @@
         : "memory" \
     );
     #define RETURN  return reg1;
-#elif defined(CONFIG_ARM)
+#elif defined(CONFIG_ARM) || defined(__arm__)
     #define REGISTER1 DECLARE_REGISTER(0,r7,num)
     #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,r0,arg1)
     #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,r1,arg2)
@@ -33,7 +33,7 @@
 
     #define RETURN return reg1;
 
-#elif defined(CONFIG_MIPS)
+#elif defined(CONFIG_MIPS) || defined(mips) || defined(__mips__) || defined(__mips) || defined(__mips64)
     #define REGISTER1 DECLARE_REGISTER(0,v0,num)
     #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,a0,arg1)
     #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,a1,arg2)
@@ -46,7 +46,7 @@
         : "memory" \
     );
     #define RETURN  return reg0;
-#elif defined(CONFIG_X86_64)
+#elif defined(CONFIG_X86_64) || defined(__x86_64__)
     #define REGISTER1 DECLARE_REGISTER(0,rax,num)
     #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,rdi,arg1)
     #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,rsi,arg2)
@@ -59,7 +59,7 @@
         : "r"(reg1) x  \
         : "memory" );
     #define RETURN return reg0;
-#elif defined(CONFIG_I386)
+#elif defined(CONFIG_I386) || (defined(__i386__) && !defined(__x86_64__))
     #define REGISTER1 DECLARE_REGISTER(0,eax,num)
     #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,ebx,arg1)
     #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,ecx,arg2)
