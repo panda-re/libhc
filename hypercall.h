@@ -95,7 +95,7 @@
     #define REGISTER5 REGISTER4 DECLARE_REGISTER(4,r7,arg4)
 
     #define ASM(x) asm volatile(\
-        "xori $r10, $r10, 0"\
+        "xori 10, 10, 0"\
         : "+r"(reg0) \
         : "r"(reg1) x  \
         : "memory" \
@@ -109,7 +109,7 @@
     #define REGISTER5 REGISTER4 DECLARE_REGISTER(4,a4,arg4)
 
     #define ASM(x) asm volatile(\
-        "xori $0, $0, 0"\
+        "xori x0, x0, 0"\
         : "+r"(reg0) \
         : "r"(reg1) x  \
         : "memory" \
