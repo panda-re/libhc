@@ -101,6 +101,20 @@
         : "memory" \
     );
     #define RETURN return reg0;
+#elif defined(CONFIG_RISCV) || (defined(__riscv__)
+    #define REGISTER1 DECLARE_REGISTER(0,a0,num)
+    #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,a1,arg1)
+    #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,a2,arg2)
+    #define REGISTER4 REGISTER3 DECLARE_REGISTER(3,a3,arg3)
+    #define REGISTER5 REGISTER4 DECLARE_REGISTER(4,a4,arg4)
+
+    #define ASM(x) asm volatile(\
+        "xori $0, $0, 0"\
+        : "+r"(reg0) \
+        : "r"(reg1) x  \
+        : "memory" \
+    );
+    #define RETURN return reg0;
 #else
 #error "not supported"
 #endif
