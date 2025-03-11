@@ -87,6 +87,20 @@
         : "memory" \
     );
     #define RETURN return reg1;
+#elif defined(CONFIG_PPC64) || defined(CONFIG_PPC) || (defined(__ppc64__) || defined(__ppc__)
+    #define REGISTER1 DECLARE_REGISTER(0,r3,num)
+    #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,r4,arg1)
+    #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,r5,arg2)
+    #define REGISTER4 REGISTER3 DECLARE_REGISTER(3,r6,arg3)
+    #define REGISTER5 REGISTER4 DECLARE_REGISTER(4,r7,arg4)
+
+    #define ASM(x) asm volatile(\
+        "xori $r10, $r10, 0"\
+        : "+r"(reg0) \
+        : "r"(reg1) x  \
+        : "memory" \
+    );
+    #define RETURN return reg0;
 #else
 #error "not supported"
 #endif
