@@ -74,11 +74,11 @@
     );
     #define RETURN return reg0;
 #elif defined(CONFIG_LOONGARCH64) || defined(__loongarch64)
-    #define REGISTER1 DECLARE_REGISTER(0,a0,num)
-    #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,a1,arg1)
-    #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,a2,arg2)
-    #define REGISTER4 REGISTER3 DECLARE_REGISTER(3,a3,arg3)
-    #define REGISTER5 REGISTER4 DECLARE_REGISTER(4,a4,arg4)
+    #define REGISTER1 DECLARE_REGISTER(0,a7,num)
+    #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,a0,arg1)
+    #define REGISTER3 REGISTER2 DECLARE_REGISTER(2,a1,arg2)
+    #define REGISTER4 REGISTER3 DECLARE_REGISTER(3,a2,arg3)
+    #define REGISTER5 REGISTER4 DECLARE_REGISTER(4,a3,arg4)
 
     #define ASM(x)  asm volatile( \
        "cpucfg $r0, $r0" \
