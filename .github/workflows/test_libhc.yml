@@ -1,0 +1,57 @@
+name: Test Hypercalls
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test_hypercalls:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch:
+          - i386
+          - x86_64
+          - arm
+          - aarch64
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get -qq update -y
+          sudo apt-get -qq install cmake
+
+      - name: Check out
+        uses: actions/checkout@v6
+
+      - name: Download for cross-compiling
+        run: |
+          # i386 compile
+          sudo apt-get -y install gcc-multilib
+          # arm compile
+          sudo apt-get -y install gcc-arm-linux-gnueabi
+          # aarch64 compile
+          sudo apt-get -y install gcc-aarch64-linux-gnu
+
+      - name: Install PANDA
+        run: |
+          ubuntu_version=$(lsb_release -rs)
+          curl -LJ -o /tmp/pandare_${ubuntu_version}.deb https://github.com/panda-re/panda/releases/latest/download/pandare_${ubuntu_version}.deb
+          sudo apt-get -y install /tmp/pandare_${ubuntu_version}.deb
+          pip install pandare
+
+      # Adding the rm -rf to make sure the build directory is clean before building on each architecture
+      - name: Build binaries for ${{ matrix.arch }}
+        run: |
+          rm -rf build
+          cmake -B"./build" \
+          -DCMAKE_INSTALL_PREFIX="/usr" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DARCH=${{ matrix.arch }}
+          cmake --build "./build" --parallel "$(nproc)" --config Release
+
+      - name: Run tests
+        run: |
+          cd tests
+          python3 test_libhc.py --arch ${{ matrix.arch }} --ci

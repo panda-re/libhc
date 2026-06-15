@@ -1,3 +1,5 @@
+#ifndef __HYPERCALL_H__
+#define __HYPERCALL_H__
 
 #define DECLARE_REGISTER(x,y,z) register unsigned long reg##x asm(#y) = z;
 #define COMMA ,
@@ -14,7 +16,7 @@
         : "r"(reg0) x \
         : "memory" \
     );
-    #define RETURN  return reg1;
+    #define RETURN  return reg0;
 #elif defined(CONFIG_ARM) || defined(__arm__)
     #define REGISTER1 DECLARE_REGISTER(0,r7,num)
     #define REGISTER2 REGISTER1 DECLARE_REGISTER(1,r0,arg1)
@@ -28,7 +30,7 @@
         : "r"(reg0) x \
         : "memory" \
     );
-    #define RETURN return reg1;
+    #define RETURN return reg0;
 
 #elif defined(CONFIG_MIPS) || defined(mips) || defined(__mips__) || defined(__mips) || defined(__mips64)
     #define REGISTER1 DECLARE_REGISTER(0,v0,num)
@@ -115,23 +117,23 @@
 #else
 #error "not supported"
 #endif
-static inline unsigned long igloo_hypercall(unsigned long num, unsigned long arg1){
+static inline unsigned long igloo_hypercall(unsigned long num, unsigned long arg1) {
     REGISTER2
     ASM()
     RETURN
 }
-static inline unsigned long igloo_hypercall2(unsigned long num, unsigned long arg1, unsigned long arg2){
+static inline unsigned long igloo_hypercall2(unsigned long num, unsigned long arg1, unsigned long arg2) {
     REGISTER3
     ASM(COMMA"r"(reg2))
     RETURN
 }
 
-static inline unsigned long igloo_hypercall3(unsigned long num, unsigned long arg1, unsigned long arg2, unsigned long arg3){
+static inline unsigned long igloo_hypercall3(unsigned long num, unsigned long arg1, unsigned long arg2, unsigned long arg3) {
     REGISTER4
     ASM(COMMA "r"(reg2)COMMA "r"(reg3))
     RETURN
 }
-static inline unsigned long igloo_hypercall4(unsigned long num, unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4){
+static inline unsigned long igloo_hypercall4(unsigned long num, unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4) {
     REGISTER5
     ASM(COMMA "r"(reg2)COMMA "r"(reg3)COMMA "r"(reg4))
     RETURN
@@ -155,3 +157,4 @@ static inline int hc(int hc_type, void **s,int len) {
     return ret;
 }
 #endif
+#endif // __HYPERCALL_H__

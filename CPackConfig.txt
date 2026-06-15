@@ -1,0 +1,30 @@
+set(CPACK_PACKAGE_NAME "libhc-dev")
+
+set(CPACK_PACKAGE_VENDOR "pandare")
+
+set(CPACK_PACKAGE_DESCRIPTION "Cross-platform assembly hypercall wrappers for PANDA")
+
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Cross-platform assembly hypercall wrappers for PANDA")
+
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "all")
+
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Luke Craig <luke.craig@mit.edu>")
+
+set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
+
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}_${PROJECT_VERSION}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+
+# Homepage
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/panda-re/libhc")
+
+# Source ignore files
+set(CPACK_SOURCE_IGNORE_FILES "^${CMAKE_BINARY_DIR};/\\\\.gitignore;/\\\\.svn;\\\\.swp$;\\\\.#;/#;.*~")
+
+# Licensing information
+set(CPACK_DEBIAN_PACKAGE_LICENSE "MIT")
+
+include(CPack)

@@ -1,0 +1,34 @@
+# No panda recordings
+recording-rr-*
+*.plog
+*.json
+
+# No ISO
+*.iso
+
+# Binaries
+test_hc_i386
+test_hc_x86_64
+test_hc_arm
+test_hc_aarch64
+
+# No IDE
+.idea
+
+# ignore build folder and any debian packages
+build
+*.deb
+
+# Got this from here, https://github.com/github/gitignore/blob/main/CMake.gitignore
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+CMakeUserPresets.json
